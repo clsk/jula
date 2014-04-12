@@ -64,8 +64,6 @@ class Parser:
 
         return NodeArgumentList(ids)
 
-
-
     def parse_func(self):
         print "parsing func"
         t = self.get_token()

@@ -1,0 +1,23 @@
+a = 4;
+b = 5;
+
+if (a == c) then
+    print(5);
+end
+else
+    print(6);
+end
+
+function func(var1, var2)
+    abc = 4;
+    cde = 5;
+    efg = abc + cde;
+    str = "this is my \" esc'aped string";
+end
+
+function Class(var1, var2)
+    this.t = 56;
+end
+
+s = new Class(a, 4);
+

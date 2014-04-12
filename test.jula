@@ -17,7 +17,9 @@ end
 
 function Class(var1, var2)
     this.t = 56;
+    this.f = var1[5];
 end
 
 s = new Class(a, 4);
+f = {a: 5,b: 1,c: b,d: c };
 

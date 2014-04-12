@@ -81,6 +81,8 @@ class Token:
     BIT_XOR = 77
     BIT_NOT = 78
     STRING = 79
+    LCURLY = 80
+    RCURLY = 81
 
 
 
@@ -124,6 +126,8 @@ class Tokenizer:
             ']': Token.RBRACK,
             '(': Token.LPAREN,
             ')': Token.RPAREN,
+            '{': Token.LCURLY,
+            '}': Token.RCURLY,
             '+': Token.PLUS,
             '++': Token.INCR,
             '--': Token.DECR,

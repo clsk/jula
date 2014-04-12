@@ -6,6 +6,9 @@ class Node(object):
     FUNC_CALL = 4
     OP = 5
     IF = 6
+    INDEXING = 7
+    CONST_LITERAL = 8
+    OBJ_LITERAL = 9
 
     def __init__(self, t, children=[]):
         self.children = children
@@ -41,3 +44,16 @@ class NodeOperator(Node):
 class NodeIf(Node):
     def __init__(self, condition, block):
         Node.__init__(self, Node.IF, [condition, block])
+
+class NodeIndexing(Node):
+    def __init__(self, identifier, exp):
+        Node.__init__(self, Node.INDEXING, [NodeIdentifier(identifier), exp])
+
+class NodeConstLiteral(Node):
+    def __init__(self, literal):
+        Node.__init__(self, Node.CONST_LITERAL)
+        self.literal = literal
+
+class NodeObjectLiteral(Node):
+    def __init__(self, assignments):
+        Node.__init__(self, Node.OBJ_LITERAL, assignments)

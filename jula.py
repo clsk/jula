@@ -2,8 +2,10 @@ import sys
 from tokenizer import Tokenizer
 from tokenizer import Token
 from parser import Parser
+from generator import *
 
 if (__name__ == "__main__"):
+    outfile = 'out.js'
     if len(sys.argv) < 2:
         print "Error: Missing input file argument!"
         exit(0)
@@ -32,4 +34,7 @@ if (__name__ == "__main__"):
         print repr(token.lineno) + ":" + repr(token.column) + ": (" + repr(token.t) + ") " + token.text
     print "Beginning parse process..."
     parser = Parser(t)
-    parser.parse()
+    ast = parser.parse()
+    output = get_generator(ast).generate()
+    with open(outfile, "w") as out:
+        out.write(output)

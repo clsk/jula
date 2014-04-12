@@ -201,7 +201,7 @@ class Tokenizer:
             if c in ' \t\r\n':
                 c = self.get_char()
                 continue
-            elif c == '/' and peak_char() == '/':
+            elif c == '/' and self.peak_char() == '/':
                 break # comment, ignore rest of line
             elif c.isdigit(): # this is a number
                 self.tokenize_number()

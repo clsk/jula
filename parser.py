@@ -11,17 +11,20 @@ class Parser:
             self.tokenizer.tokenize()
 
         self.tokens = self.tokenizer.tokens
-        self.parse_block()
+        block = self.parse_block()
         if self.pos != len(self.tokens):
             self.flag_error("Input reached end of file")
+        return block
 
     def parse_block(self):
         print "parsing block"
-        children = []
+        statements = []
         t = self.get_token()
         while t != None and t.t != Token.END:
-            children.append(self.parse_statement())
+            statements.append(self.parse_statement())
             t = self.get_token()
+
+        return NodeBlock(statements)
         print "done parsing block"
 
     def parse_arg_list(self):
@@ -111,13 +114,13 @@ class Parser:
         while t != None:
             if t.t == Token.ELSEIF:
                 node.children.append(self.parse_if())
-            elif t.t == Token.ELSE:
-                node.children.append(self.parse_else())
             else:
                 break
             t = self.get_token()
 
-        if t != None:
+        if t.t == Token.ELSE:
+            node.children.append(self.parse_else())
+        elif t != None:
             self.unget_token()
 
 
@@ -172,7 +175,7 @@ class Parser:
                     self.flag_error("Expecting closing parenthesis")
             elif t.t in Tokenizer.prefix_operators:
                 self.get_token()
-                return NodeOperator(t.text, 1, self.parse_expression())
+                return NodeOperator(t.text, 1, [self.parse_expression()])
             elif left is None:
                 if t.t == Token.NUMBER or t.t == Token.STRING or t.t == Token.IDENTIFIER or t.t == Token.LCURLY:
                     if t.t == Token.IDENTIFIER:
@@ -209,7 +212,7 @@ class Parser:
 
     def parse_assignment(self):
         print "parsing assignment"
-        identifier = self.current_token()
+        identifier = self.current_token().text
         if self.get_token().t != Token.ASSIGN:
             self.flag_error("Expecting assignment operator")
 
@@ -218,10 +221,10 @@ class Parser:
 
     def parse_func_call(self):
         print "parsing func call"
-        name = self.current_token()
+        name = self.current_token().text
         self.get_token()
         args = self.parse_arg_call_list()
-        return NodeFunctionCall(name, args)
+        return NodeFunctionCall(NodeIdentifier(name), args)
 
     def parse_indexing(self):
         print "parsing indexing"

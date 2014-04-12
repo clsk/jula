@@ -9,10 +9,15 @@ class Node(object):
     INDEXING = 7
     CONST_LITERAL = 8
     OBJ_LITERAL = 9
+    BLOCK = 10
 
     def __init__(self, t, children=[]):
         self.children = children
         self.t = t
+
+class NodeBlock(Node):
+    def __init__(self, statements):
+        Node.__init__(self, Node.BLOCK, statements)
 
 class NodeIdentifier(Node):
     def __init__(self, name):

@@ -117,9 +117,12 @@ class Parser:
             t = self.get_token()
 
         if t.t == Token.ELSE:
+            print "appended else"
             node.children.append(self.parse_else())
+            print "len: " + repr(len(node.children))
         elif t != None:
             self.unget_token()
+        return node
 
 
     def parse_else(self):

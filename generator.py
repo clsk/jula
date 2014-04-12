@@ -96,18 +96,19 @@ class GeneratorOp(Generator):
 class GeneratorIf(Generator):
     def __init__(self, node, ifelse=False):
         Generator.__init__(self, node)
-        self.ifelse
+        self.ifelse = ifelse
 
     def generate(self):
-        out = 'if ( ' + self.node.children[0] + ' ) {\n' + GeneratorBlock(self.node.children[1]).generate()
-        if ifelse:
+        out = 'if ( ' + get_generator(self.node.children[0]).generate() + ' ) {\n' + GeneratorBlock(self.node.children[1]).generate() + '}\n'
+        if self.ifelse:
             out.insert(0, 'else ')
 
-        for i in (2, len(self.node.children)):
-            if self.node.children[i] == Node.IF:
-                GeneratorIf(self.node.children[i], True)
-            else:
-                out += 'else \n{ ' + GeneratorBlock(self.node.children[i]).generate() + '\n }'
+        if len(self.node.children) > 2:
+            for i in range(2, len(self.node.children), 1):
+                if self.node.children[i] == Node.IF:
+                    GeneratorIf(self.node.children[i], True)
+                else:
+                    out += 'else {\n' + GeneratorBlock(self.node.children[i]).generate() + '}\n'
         return out
 
 class GeneratorConstLiteral(Generator):

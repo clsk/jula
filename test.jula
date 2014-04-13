@@ -25,7 +25,7 @@ end
 s = new MyClass(a, 4);
 f = {a: 5,b: 1,c: b,d: a };
 
-for (i = 0; i < 5; ++i)
+for (i = 0; i < 5; i++)
     console.log(i);
 end
 

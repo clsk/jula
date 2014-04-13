@@ -85,13 +85,16 @@ class GeneratorOp(Generator):
         Generator.__init__(self, node)
 
     def generate(self):
-        if self.node.n == 1:
+        if self.node.n == -1:
             out = self.node.op
             if self.node.op == 'new':
                 out += ' '
             out += get_generator(self.node.children[0]).generate()
+        elif self.node.n == 1:
+            out = get_generator(self.node.children[0]).generate() + self.node.op
         elif self.node.n == 2:
             out = get_generator(self.node.children[0]).generate() + ' ' + self.node.op + ' ' + get_generator(self.node.children[1]).generate()
+
         return out
 
 class GeneratorIf(Generator):

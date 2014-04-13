@@ -151,6 +151,7 @@ class Parser:
         return NodeObjectLiteral(assignments)
 
     def parse_for(self):
+        print "parsing for"
         self.get_token() # consume for
         assign = self.parse_arg_call_list(Token.LPAREN, Token.SEMICOLON)
 
@@ -168,6 +169,7 @@ class Parser:
         return NodeFor(assign, condition, exprs, block)
 
     def parse_while(self):
+        print "parsing while"
         if self.get_token().t != Token.LPAREN:
             self.flag_error("Expecting opening parenthesis at while")
 
@@ -226,9 +228,6 @@ class Parser:
                 left = self.parse_expression()
                 if self.get_token().t != Token.RPAREN:
                     self.flag_error("Expecting closing parenthesis")
-            elif t.t in Tokenizer.prefix_operators:
-                self.get_token()
-                return NodeOperator(t.text, 1, [self.parse_expression()])
             elif left is None:
                 if t.t == Token.NUMBER or t.t == Token.STRING or t.t == Token.TRUE or t.t == Token.FALSE or t.t == Token.IDENTIFIER or t.t == Token.LCURLY:
                     if t.t == Token.IDENTIFIER:
@@ -243,6 +242,11 @@ class Parser:
                         left = self.parse_object_literal()
                     else:
                         left = NodeConstLiteral(t.text)
+                elif t.t in Tokenizer.prefix_operators:
+                    print "found prefix"
+                    self.get_token()
+                    return NodeOperator(t.text, -1, [self.parse_expression()])
+
                 else:
                     self.flag_error("Expecting literal or identifier in parse_expression")
             elif t.t in Tokenizer.binary_operators:
@@ -251,6 +255,10 @@ class Parser:
                 node = NodeOperator(t.text, 2, [left, right])
                 left = None
                 break
+            elif t.t in Tokenizer.postfix_operators:
+                print "found postfix"
+                left = NodeOperator(t.text, 1, [left])
+
             else:
                 self.flag_error("Unexpected token at parse_expression")
             t = self.get_token()

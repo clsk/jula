@@ -1,25 +1,42 @@
 a = 4;
 b = 5;
 
-if (a == c) then
+if (a == b) then
     console.log(5);
 end
 else
     console.log(6);
 end
 
-function func(var1, var2)
+function func()
     abc = 8;
     cde = 9;
     efg = abc + cde;
     str = "this is my \" esc'aped string";
 end
 
-function Class(var1, var2)
+// Constructor function
+function MyClass(var1, var2)
     this.t = 56;
     this.f = var1[5];
 end
 
-s = new Class(a, 4);
+// Constructing an objct
+s = new MyClass(a, 4);
 f = {a: 5,b: 1,c: b,d: a };
-console.log(a);
+
+for (i = 0; i < 5; ++i)
+    console.log(i);
+end
+
+i = 0;
+while (i < 5) do
+    console.log(i);
+    ++i;
+end
+b = true;
+i = 0;
+repeat
+    console.log(i);
+    ++i;
+until (i >= 5);

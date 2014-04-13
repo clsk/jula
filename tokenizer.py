@@ -83,8 +83,8 @@ class Token:
     STRING = 79
     LCURLY = 80
     RCURLY = 81
-
-
+    REPEAT = 82
+    UNTIL = 83
 
     def __init__(self, t, text, lineno, column):
         self.t = t
@@ -119,7 +119,9 @@ class Tokenizer:
             'self': Token.SELF,
             'new': Token.NEW,
             'delete': Token.DELETE,
-            'function': Token.FUNCTION
+            'function': Token.FUNCTION,
+            'repeat': Token.REPEAT,
+            'until': Token.UNTIL
             }
     operators = {
             '[': Token.LBRACK,
@@ -166,14 +168,15 @@ class Tokenizer:
             Token.GE,
             Token.BIT_AND,
             Token.BIT_OR,
-            Token.BIT_XOR
+            Token.BIT_XOR,
+            Token.ASSIGN
             ]
     prefix_operators = [
             Token.DECR,
             Token.INCR,
             Token.NOT,
             Token.BIT_NOT,
-            Token.NEW
+            Token.NEW,
             ]
     postfix_operators = [
             Token.INCR,

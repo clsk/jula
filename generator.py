@@ -3,8 +3,6 @@ from node import *
 def get_generator(node):
     if node.t == Node.BLOCK:
         return GeneratorBlock(node)
-    elif node.t == Node.ASSIGNMENT:
-        return GeneratorAssign(node)
     elif node.t == Node.IDENTIFIER:
         return GeneratorIdentifier(node)
     elif node.t == Node.ARGS:
@@ -23,6 +21,12 @@ def get_generator(node):
         return GeneratorIndexing(node)
     elif node.t == Node.OBJ_LITERAL:
         return GeneratorObjectLiteral(node)
+    elif node.t == Node.FOR:
+        return GeneratorFor(node)
+    elif node.t == Node.WHILE:
+        return GeneratorWhile(node)
+    elif node.t == Node.REPEAT:
+        return GeneratorRepeat(node)
 
 class Generator(object):
     def __init__(self, node):
@@ -37,16 +41,9 @@ class GeneratorBlock(Generator):
         for child in self.node.children:
             if child is not None:
                 out += get_generator(child).generate()
-                if child.t != Node.IF and child.t != Node.FUNC:
+                if child.t != Node.IF and child.t != Node.FUNC and child.t != Node.WHILE and child.t != Node.REPEAT and child.t != Node.FOR:
                     out += ';\n'
         return out
-
-class GeneratorAssign(Generator):
-    def __init__(self, node):
-        Generator.__init__(self, node)
-
-    def generate(self):
-        return GeneratorIdentifier(self.node.children[0]).generate() + " = " + get_generator(self.node.children[1]).generate()
 
 class GeneratorIdentifier(Generator):
     def __init__(self, node):
@@ -63,7 +60,7 @@ class GeneratorArgs(Generator):
         out = ''
         for arg in self.node.children:
             out += get_generator(arg).generate() + ','
-        if arg:
+        if self.node.children:
             out = out[:-1] # remove last comma
 
         return out
@@ -80,7 +77,8 @@ class GeneratorFuncCall(Generator):
         Generator.__init__(self, node)
 
     def generate(self):
-        return GeneratorIdentifier(self.node.children[0]).generate() + '( ' + GeneratorArgs(self.node.children[1]).generate() + ')'
+        str = GeneratorIdentifier(self.node.children[0]).generate() + '( ' + GeneratorArgs(self.node.children[1]).generate() + ')'
+        return str
 
 class GeneratorOp(Generator):
     def __init__(self, node):
@@ -88,7 +86,10 @@ class GeneratorOp(Generator):
 
     def generate(self):
         if self.node.n == 1:
-            out = self.node.op + ' ' + get_generator(self.node.children[0]).generate()
+            out = self.node.op
+            if self.node.op == 'new':
+                out += ' '
+            out += get_generator(self.node.children[0]).generate()
         elif self.node.n == 2:
             out = get_generator(self.node.children[0]).generate() + ' ' + self.node.op + ' ' + get_generator(self.node.children[1]).generate()
         return out
@@ -137,3 +138,46 @@ class GeneratorObjectLiteral(Generator):
             out = out[:-2] # remove last comma
         out += '}'
         return out
+
+class GeneratorFor(Generator):
+    def __init__(self, node):
+        Generator.__init__(self, node)
+
+    def generate(self):
+        out = 'for ('
+        if self.node.children[0] is not None:
+            out += get_generator(self.node.children[0]).generate()
+        out += ';'
+        if self.node.children[1] is not None:
+            out += get_generator(self.node.children[1]).generate()
+        out += ';'
+        if self.node.children[2] is not None:
+            out += get_generator(self.node.children[2]).generate()
+
+        out += ') {\n'
+        out += GeneratorBlock(self.node.children[3]).generate()
+        out += '}\n'
+        return out
+
+class GeneratorWhile(Generator):
+    def __init__(self, node):
+        Generator.__init__(self, node)
+
+    def generate(self):
+        out = 'while (' + get_generator(self.node.children[0]).generate() + ') {\n'
+        out += GeneratorBlock(self.node.children[1]).generate()
+        out += '}\n'
+        return out
+
+class GeneratorRepeat(Generator):
+    def __init__(self, node):
+        Generator.__init__(self, node)
+
+    def generate(self):
+        out = 'do {\n'
+        out += GeneratorBlock(self.node.children[1]).generate()
+        out += 'if (' + get_generator(self.node.children[0]).generate() + ') break;\n'
+        out += '}'
+        out += 'while (true);\n'
+        return out
+

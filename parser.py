@@ -16,11 +16,11 @@ class Parser:
             self.flag_error("Input reached end of file")
         return block
 
-    def parse_block(self):
+    def parse_block(self, terminator = Token.END):
         print "parsing block"
         statements = []
         t = self.get_token()
-        while t != None and t.t != Token.END:
+        while t != None and t.t != terminator:
             statements.append(self.parse_statement())
             t = self.get_token()
 
@@ -46,21 +46,22 @@ class Parser:
 
         return NodeArgumentList(ids)
 
-    def parse_arg_call_list(self):
+    def parse_arg_call_list(self, beginning = Token.LPAREN, terminator = Token.RPAREN):
         print "parsing arg call list"
-        if self.current_token().t != Token.LPAREN:
+        if self.current_token().t != beginning:
             self.flag_error("Expecting left parenthesis at parse_arg_list")
 
-        ids = []
         t = self.get_token()
-        while t.t != None:
-            ids.append(NodeIdentifier(t.text))
-            t = self.get_token()
-            if t.t == Token.RPAREN:
-                break
-            elif t.t != Token.COMMA:
-                self.flag_error("Expected comma or closing parenthesis at parse_arg_call_list")
-            t = self.get_token()
+        ids = []
+        if (t.t != terminator):
+            while t.t != None:
+                ids.append(self.parse_expression())
+                t = self.get_token()
+                if t.t == terminator:
+                    break
+                elif t.t != Token.COMMA:
+                    self.flag_error("Expected comma or closing parenthesis at parse_arg_call_list")
+                t = self.get_token()
 
         return NodeArgumentList(ids)
 
@@ -82,15 +83,17 @@ class Parser:
             return self.parse_if()
         elif token.t == Token.FUNCTION:
             return self.parse_func()
-        elif token.t == Token.IDENTIFIER and self.peak_token().t == Token.ASSIGN:
-            r = self.parse_assignment()
+        elif token.t == Token.FOR:
+            return self.parse_for()
+        elif token.t == Token.WHILE:
+            return self.parse_while()
+        elif token.t == Token.REPEAT:
+            return self.parse_repeat()
         else:
-            r = self.parse_expression()
-
-        if self.get_token().t != Token.SEMICOLON:
-            self.flag_error("Expecting semicolon at parse_stement")
-        else:
-            return r
+            exp =  self.parse_expression()
+            if self.get_token().t != Token.SEMICOLON:
+                self.flag_error("Expecting semicolon at parse_stement")
+            return exp
 
     def parse_if(self):
         print "parsing if"
@@ -119,7 +122,6 @@ class Parser:
         if t.t == Token.ELSE:
             print "appended else"
             node.children.append(self.parse_else())
-            print "len: " + repr(len(node.children))
         elif t != None:
             self.unget_token()
         return node
@@ -148,6 +150,57 @@ class Parser:
             self.flag_error("Expecting clusing curly brace at parse_object_literal")
         return NodeObjectLiteral(assignments)
 
+    def parse_for(self):
+        self.get_token() # consume for
+        assign = self.parse_arg_call_list(Token.LPAREN, Token.SEMICOLON)
+
+        t = self.get_token()
+        if t.t == Token.SEMICOLON:
+            condition = None
+        else:
+            condition = self.parse_expression()
+            if self.get_token().t != Token.SEMICOLON:
+                self.flag_error("Expecting semicolon after condition at parse_for")
+
+        exprs = self.parse_arg_call_list(Token.SEMICOLON, Token.RPAREN)
+
+        block = self.parse_block()
+        return NodeFor(assign, condition, exprs, block)
+
+    def parse_while(self):
+        if self.get_token().t != Token.LPAREN:
+            self.flag_error("Expecting opening parenthesis at while")
+
+        self.get_token()
+
+        condition = self.parse_expression()
+
+        if self.get_token().t != Token.RPAREN:
+            self.flag_error("Expecting closing parenthesis at while")
+
+        if self.get_token().t != Token.DO:
+            self.flag_error("Expecting do directive in parse_while")
+        return NodeWhile(condition, self.parse_block())
+
+    def parse_repeat(self):
+        print "parsing repeat"
+        print self.current_token().text
+        block = self.parse_block(Token.UNTIL)
+
+        if self.get_token().t != Token.LPAREN:
+            self.flag_error("Expecting opening parenthesis at parse_repeat")
+
+        self.get_token()
+
+        condition = self.parse_expression()
+
+        if self.get_token().t != Token.RPAREN:
+            self.flag_error("Expecting closing parenthesis at parse_repeat")
+
+        if self.get_token().t != Token.SEMICOLON:
+            self.flag_error("Expecting semicolon in parse_repeat")
+        return NodeRepeat(condition, block)
+
 
     def parse_object_literal_assign(self):
         print "parsing object literal assignment"
@@ -156,7 +209,6 @@ class Parser:
         if self.get_token().t != Token.COLON:
             self.flag_error("Expecting colon at parse_object_literal_assign")
         self.get_token() # consume colon
-        print "expression to parse: " + self.current_token().text
         return NodeAssignment(NodeIdentifier(identifier), self.parse_expression())
 
     def parse_expression(self):
@@ -178,7 +230,7 @@ class Parser:
                 self.get_token()
                 return NodeOperator(t.text, 1, [self.parse_expression()])
             elif left is None:
-                if t.t == Token.NUMBER or t.t == Token.STRING or t.t == Token.IDENTIFIER or t.t == Token.LCURLY:
+                if t.t == Token.NUMBER or t.t == Token.STRING or t.t == Token.TRUE or t.t == Token.FALSE or t.t == Token.IDENTIFIER or t.t == Token.LCURLY:
                     if t.t == Token.IDENTIFIER:
                         p = self.peak_token()
                         if p.t == Token.LPAREN: # this is a function call
@@ -210,15 +262,6 @@ class Parser:
             return node
         else:
             self.flag_error("Expecting something at parse_expression")
-
-    def parse_assignment(self):
-        print "parsing assignment"
-        identifier = self.current_token().text
-        if self.get_token().t != Token.ASSIGN:
-            self.flag_error("Expecting assignment operator")
-
-        self.get_token()
-        return NodeAssignment(NodeIdentifier(identifier), self.parse_expression())
 
     def parse_func_call(self):
         print "parsing func call"

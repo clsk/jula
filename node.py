@@ -10,6 +10,9 @@ class Node(object):
     CONST_LITERAL = 8
     OBJ_LITERAL = 9
     BLOCK = 10
+    FOR = 11
+    WHILE = 12
+    REPEAT = 13
 
     def __init__(self, t, children=[]):
         self.children = children
@@ -62,3 +65,15 @@ class NodeConstLiteral(Node):
 class NodeObjectLiteral(Node):
     def __init__(self, assignments):
         Node.__init__(self, Node.OBJ_LITERAL, assignments)
+
+class NodeFor(Node):
+    def __init__(self, assign, condition, expr, block):
+        Node.__init__(self, Node.FOR, [assign, condition, expr, block])
+
+class NodeWhile(Node):
+    def __init__(self, condition, block):
+        Node.__init__(self, Node.WHILE, [condition, block])
+
+class NodeRepeat(Node):
+    def __init__(self, condition, block):
+        Node.__init__(self, Node.REPEAT, [condition, block])

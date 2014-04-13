@@ -243,7 +243,6 @@ class Parser:
                     else:
                         left = NodeConstLiteral(t.text)
                 elif t.t in Tokenizer.prefix_operators:
-                    print "found prefix"
                     self.get_token()
                     return NodeOperator(t.text, -1, [self.parse_expression()])
 
@@ -256,7 +255,6 @@ class Parser:
                 left = None
                 break
             elif t.t in Tokenizer.postfix_operators:
-                print "found postfix"
                 left = NodeOperator(t.text, 1, [left])
 
             else:
